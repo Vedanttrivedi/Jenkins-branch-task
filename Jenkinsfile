@@ -2,10 +2,23 @@ pipeline {
     agent any
 
     parameters {
-        choice(name: 'BRANCH', choices: ['v1', 'v2', 'v3', 'v4', 'v5'], description: 'Pick The branch')
+        choice(name: 'BRANCH', choices: '', description: 'Select branch')
     }
 
     stages {
+        stage('Prepare') {
+            steps {
+                script {
+                    // Discover branches and update parameter choices
+                    def branches = []
+                    def scmVars = checkout scm
+                    for (int i = 0; i < scmVars.GIT_BRANCH.tokenize('/').size(); i++) {
+                        branches.add(scmVars.GIT_BRANCH.tokenize('/')[i])
+                    }
+                    params.BRANCH = branches.join('\n')
+                }
+            }
+        }
         stage('Build') {
             steps {
                 script {
